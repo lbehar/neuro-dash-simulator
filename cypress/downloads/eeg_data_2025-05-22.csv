@@ -1,0 +1,11 @@
+# NeuroLink EEG Data Export
+# Export Date: 2025-05-22T17:32:52.427Z
+# Signal Mode: normal
+# Total Data Points: 1
+# Average Signal: 33.2 μV
+# Peak Signal: 33.2 μV
+# Signal Range: 0 μV
+# Out of Range Points: 0
+#
+Timestamp,EEG Value (μV),Out of Range
+18:32:52,33.24,NO

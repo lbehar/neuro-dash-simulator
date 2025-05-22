@@ -94,7 +94,15 @@ export default function DashboardPage() {
   const handleSignalModeChange = (mode: SignalMode) => {
     setSignalMode(mode);
     eegSimulator.setSignalMode(mode);
+  
+    // 👇 TEMP: Force alert visible for testing
+    if (mode === 'seizure') {
+      setAlertVisible(true);
+    } else {
+      setAlertVisible(false);
+    }
   };
+  
 
   useEffect(() => {
     if (window.Chart && chartRef.current && eegData.length > 0) {
