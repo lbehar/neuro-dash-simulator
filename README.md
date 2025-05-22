@@ -2,14 +2,14 @@
 
 A real-time EEG monitoring dashboard inspired by Firefly Neuro / Elminda. Built for clinician-facing data visualization and QA automation testing.
 
-## 🚀 Live App
+## Live App
 [Launch NeuroDash Simulator](https://neuro-dash-simulator.replit.app/)
 
-## 🧪 Test-Driven QA Engineering
+## Test-Driven QA Engineering
 
 This project demonstrates advanced UI testing in a clinical simulation context using Cypress.
 
-### ✅ Features Tested:
+### Features Tested:
 
 * Role-based dashboard access (Clinician vs Researcher)
 * Conditional CSV export feature
@@ -18,7 +18,7 @@ This project demonstrates advanced UI testing in a clinical simulation context u
 * Alert system for out-of-range brain signals
 * UI response to signal mode changes (Normal, Seizure, Flatline)
 
-## 📂 Tech Stack
+## Tech Stack
 
 * React + TypeScript
 * Cypress for automated end-to-end testing
@@ -26,16 +26,7 @@ This project demonstrates advanced UI testing in a clinical simulation context u
 * Tailwind CSS + shadcn/ui components
 * Replit for deployment
 
-## 📸 Screenshots
-
-*Add screenshots of:*
-
-* Dashboard UI (Clinician view)
-* Signal chart and timestamp
-* Cypress tests passing
-* Export CSV button and alert banner
-
-## 📄 Test Plan Summary
+## Test Plan Summary
 
 See `cypress/e2e/basic_ui.cy.ts` for:
 
@@ -49,7 +40,7 @@ See `cypress/e2e/basic_ui.cy.ts` for:
 ![EEG Alert](./screenshots/signal-alert.png)
 
 
-## 🧠 Notes on Alert Testing
+## Notes on Alert Testing
 
 To support predictable testing in Cypress, alert visibility is temporarily controlled in code:
 
@@ -63,7 +54,7 @@ if (mode === 'seizure' || mode === 'flatline') {
 
 This ensures test reliability and will be removed or gated in production using `NODE_ENV`.
 
-## 📦 Setup (Local Dev)
+## Setup (Local Dev)
 
 ```bash
 git clone https://github.com/lbehar/neuro-dash-simulator
@@ -71,7 +62,5 @@ cd neuro-dash-simulator
 npm install
 npx cypress open
 ```
-
-## ✍️ Author
 
 Leticia Behar — [@lbehar](https://github.com/lbehar)
