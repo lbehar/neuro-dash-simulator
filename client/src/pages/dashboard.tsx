@@ -82,8 +82,9 @@ export default function DashboardPage() {
       setEegData(data);
       setCurrentTime(new Date());
       
-      // Check for out-of-range signals and show alert
-      const hasOutOfRange = data.some(point => point.isOutOfRange);
+      // Check for out-of-range signals in the current data window
+      const recentData = data.slice(-10); // Check last 10 data points
+      const hasOutOfRange = recentData.some(point => point.isOutOfRange);
       setAlertVisible(hasOutOfRange);
     });
 
