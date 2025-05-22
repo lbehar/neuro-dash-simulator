@@ -2,7 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { eegSimulator, type EegDataPoint } from "@/lib/eeg-simulation";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { eegSimulator, type EegDataPoint, type SignalMode } from "@/lib/eeg-simulation";
 import { 
   Brain, 
   LogOut, 
@@ -12,7 +14,10 @@ import {
   Play, 
   Pause, 
   Download, 
-  Lock 
+  Lock,
+  AlertTriangle,
+  Settings,
+  Activity
 } from "lucide-react";
 
 // Chart.js imports
@@ -28,6 +33,8 @@ export default function DashboardPage() {
   const [eegData, setEegData] = useState<EegDataPoint[]>([]);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isRecording, setIsRecording] = useState(true);
+  const [signalMode, setSignalMode] = useState<SignalMode>('normal');
+  const [alertVisible, setAlertVisible] = useState(false);
   const chartRef = useRef<HTMLCanvasElement>(null);
   const chartInstance = useRef<any>(null);
 
@@ -74,10 +81,19 @@ export default function DashboardPage() {
     const unsubscribe = eegSimulator.subscribe((data) => {
       setEegData(data);
       setCurrentTime(new Date());
+      
+      // Check for out-of-range signals and show alert
+      const hasOutOfRange = data.some(point => point.isOutOfRange);
+      setAlertVisible(hasOutOfRange);
     });
 
     return unsubscribe;
   }, []);
+
+  const handleSignalModeChange = (mode: SignalMode) => {
+    setSignalMode(mode);
+    eegSimulator.setSignalMode(mode);
+  };
 
   useEffect(() => {
     if (window.Chart && chartRef.current && eegData.length > 0) {
@@ -316,6 +332,26 @@ export default function DashboardPage() {
           </Card>
         </div>
 
+        {/* Signal Alert */}
+        {alertVisible && (
+          <Card className="mb-6 border-amber-200 bg-amber-50">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-3">
+                <AlertTriangle className="w-5 h-5 text-amber-600" />
+                <div>
+                  <h3 className="font-semibold text-amber-800">Signal Out of Range Detected</h3>
+                  <p className="text-sm text-amber-700">
+                    EEG values are outside the normal range (10-95 μV). Clinical review may be required.
+                  </p>
+                </div>
+                <Badge variant="secondary" className="bg-amber-100 text-amber-800">
+                  Alert
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Chart Section */}
         <Card className="mb-8">
           <CardContent className="p-6">
@@ -328,6 +364,20 @@ export default function DashboardPage() {
               </div>
               
               <div className="flex items-center space-x-3 mt-4 sm:mt-0">
+                <div className="flex items-center space-x-2">
+                  <Settings className="w-4 h-4 text-slate-600" />
+                  <Select value={signalMode} onValueChange={handleSignalModeChange}>
+                    <SelectTrigger className="w-32">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="normal">Normal</SelectItem>
+                      <SelectItem value="flatline">Flatline</SelectItem>
+                      <SelectItem value="seizure">Seizure</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
                 <Button
                   onClick={toggleRecording}
                   variant={isRecording ? "destructive" : "default"}
@@ -381,8 +431,16 @@ export default function DashboardPage() {
         {/* Data Summary */}
         <Card>
           <CardContent className="p-6">
-            <h3 className="text-lg font-bold text-slate-800 mb-4">Session Summary</h3>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-slate-800">Session Summary</h3>
+              <div className="flex items-center space-x-2">
+                <Activity className="w-4 h-4 text-slate-600" />
+                <Badge variant="outline" className="capitalize">
+                  {signalMode} Mode
+                </Badge>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
               <div className="text-center p-4 bg-slate-50 rounded-lg">
                 <div className="text-2xl font-bold text-primary">
                   {stats.average}
@@ -402,8 +460,14 @@ export default function DashboardPage() {
                 <div className="text-sm text-slate-600">Range (μV)</div>
               </div>
               <div className="text-center p-4 bg-slate-50 rounded-lg">
+                <div className="text-2xl font-bold text-red-600">
+                  {eegData.filter(d => d.isOutOfRange).length}
+                </div>
+                <div className="text-sm text-slate-600">Out of Range</div>
+              </div>
+              <div className="text-center p-4 bg-slate-50 rounded-lg">
                 <div className="text-2xl font-bold text-slate-700">
-                  {isRecording ? 'Stable' : 'Paused'}
+                  {isRecording ? 'Active' : 'Paused'}
                 </div>
                 <div className="text-sm text-slate-600">Signal Status</div>
               </div>

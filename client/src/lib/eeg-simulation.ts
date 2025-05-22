@@ -2,16 +2,51 @@ export interface EegDataPoint {
   timestamp: string;
   value: number;
   time: Date;
+  isOutOfRange?: boolean;
 }
+
+export type SignalMode = 'normal' | 'flatline' | 'seizure';
 
 export class EegSimulator {
   private data: EegDataPoint[] = [];
   private maxPoints: number;
   private intervalId: NodeJS.Timeout | null = null;
   private callbacks: Array<(data: EegDataPoint[]) => void> = [];
+  private signalMode: SignalMode = 'normal';
+  private seizurePhase: number = 0;
 
   constructor(maxPoints: number = 50) {
     this.maxPoints = maxPoints;
+  }
+
+  setSignalMode(mode: SignalMode) {
+    this.signalMode = mode;
+    this.seizurePhase = 0; // Reset seizure phase when switching modes
+  }
+
+  getSignalMode(): SignalMode {
+    return this.signalMode;
+  }
+
+  private generateValue(): number {
+    switch (this.signalMode) {
+      case 'normal':
+        return 30 + Math.random() * 40; // Normal range: 30-70 μV
+      
+      case 'flatline':
+        return 2 + Math.random() * 2; // Very low, consistent signal: 2-4 μV
+      
+      case 'seizure':
+        // Seizure pattern: high amplitude spiky waves
+        this.seizurePhase += 0.5;
+        const baseValue = 50;
+        const spikeAmplitude = 40;
+        const noise = (Math.random() - 0.5) * 20;
+        return baseValue + Math.sin(this.seizurePhase) * spikeAmplitude + noise;
+      
+      default:
+        return Math.random() * 100;
+    }
   }
 
   start() {
@@ -19,10 +54,14 @@ export class EegSimulator {
     
     this.intervalId = setInterval(() => {
       const now = new Date();
+      const value = this.generateValue();
+      const isOutOfRange = value < 10 || value > 95; // Alert range: 10-95 μV
+      
       const newDataPoint: EegDataPoint = {
         timestamp: now.toLocaleTimeString(),
-        value: Math.random() * 100, // EEG-like data (0-100 μV)
+        value: Math.max(0, Math.min(100, value)), // Clamp to 0-100
         time: now,
+        isOutOfRange,
       };
 
       this.data.push(newDataPoint);
@@ -63,9 +102,25 @@ export class EegSimulator {
   }
 
   exportToCSV(): string {
-    const headers = "Timestamp,EEG Value (μV)";
-    const rows = this.data.map(point => `${point.timestamp},${point.value.toFixed(2)}`);
-    return [headers, ...rows].join("\n");
+    const stats = this.getStats();
+    const sessionInfo = [
+      "# NeuroLink EEG Data Export",
+      `# Export Date: ${new Date().toISOString()}`,
+      `# Signal Mode: ${this.signalMode}`,
+      `# Total Data Points: ${stats.count}`,
+      `# Average Signal: ${stats.average} μV`,
+      `# Peak Signal: ${stats.peak} μV`,
+      `# Signal Range: ${stats.range} μV`,
+      `# Out of Range Points: ${this.data.filter(d => d.isOutOfRange).length}`,
+      "#",
+    ];
+    
+    const headers = "Timestamp,EEG Value (μV),Out of Range";
+    const rows = this.data.map(point => 
+      `${point.timestamp},${point.value.toFixed(2)},${point.isOutOfRange ? 'YES' : 'NO'}`
+    );
+    
+    return [...sessionInfo, headers, ...rows].join("\n");
   }
 
   getStats() {
