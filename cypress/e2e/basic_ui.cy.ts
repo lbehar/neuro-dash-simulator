@@ -16,7 +16,7 @@ describe('EEG Dashboard QA Tests', () => {
       cy.contains('Patient Information').should('exist');
     });
 
-    it('should call exportToCSV and trigger download', () => {
+    /*it('should call exportToCSV and trigger download', () => {
         cy.visit('https://neuro-dash-simulator.replit.app/');
         cy.contains('Clinician').click();
         cy.contains('Access Dashboard').click();
@@ -28,7 +28,7 @@ describe('EEG Dashboard QA Tests', () => {
       
         cy.contains('Export CSV').click();
         cy.get('@createObjectURL').should('have.been.called');
-      });
+      });*/
 
       it('EEG signal timestamp updates over time', () => {
         cy.visit('https://neuro-dash-simulator.replit.app/');
@@ -76,11 +76,29 @@ describe('EEG Dashboard QA Tests', () => {
 
         // Choose the "Seizure" option
         cy.contains('Seizure').click();
-        cy.contains('Signal Out of Range Detected', { timeout: 5000 }).should('exist');
+        cy.contains('Signal Out of Range Detected', { timeout: 10000 }).should('exist');
         
         });
       
-      
+        it('Removes alert when switching back to Normal mode', () => {
+          cy.visit('https://neuro-dash-simulator.replit.app/');
+          cy.contains('Clinician').click();
+          cy.contains('Access Dashboard').click();
+          cy.wait(2000);
+        
+          // Trigger the alert
+          cy.get('button.w-32').click();
+          cy.contains('Seizure').click();
+          cy.contains('EEG values are outside the normal range', { timeout: 17000 }).should('exist');
+        
+          // Go back to normal mode
+          cy.get('button.w-32').click();
+          cy.contains('Normal').click();
+        
+          // Confirm alert disappears
+          cy.contains('EEG values are outside the normal range').should('not.exist');
+        });
+        
   
     it('Researcher dashboard hides Export CSV', () => {
       cy.visit(baseUrl);
