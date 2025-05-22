@@ -39,21 +39,6 @@ See `cypress/e2e/basic_ui.cy.ts` for:
 ### ⚠️ Signal Alert Triggered
 ![EEG Alert](./screenshots/signal-alert.png)
 
-
-## Notes on Alert Testing
-
-To support predictable testing in Cypress, alert visibility is temporarily controlled in code:
-
-```ts
-if (mode === 'seizure' || mode === 'flatline') {
-  setAlertVisible(true);
-} else {
-  setAlertVisible(false);
-}
-```
-
-This ensures test reliability and will be removed or gated in production using `NODE_ENV`.
-
 ## Setup (Local Dev)
 
 ```bash
